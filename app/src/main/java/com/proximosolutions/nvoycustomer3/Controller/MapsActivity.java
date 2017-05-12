@@ -13,6 +13,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.multidex.MultiDex;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
@@ -64,6 +65,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FloatingActionButton profileBtn;
 
     @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
@@ -102,7 +109,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         slidingUpPanelLayout = (SlidingUpPanelLayout)findViewById(R.id.sliding_layout);
-        slidingUpPanelLayout.setAnchorPoint((float) 0.2);
+        slidingUpPanelLayout.setAnchorPoint((float) 0.14);
         slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
         userEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
 
@@ -294,8 +301,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(Location location) {
 
-        Toast.makeText(this, "Lcation Changed",
-                Toast.LENGTH_SHORT).show();
+        /*Toast.makeText(this, "Lcation Changed",
+                Toast.LENGTH_SHORT).show();*/
         if(location == null){
             Toast.makeText(this, "Cannot get current location",
                     Toast.LENGTH_SHORT).show();

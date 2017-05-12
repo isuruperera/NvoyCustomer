@@ -6,6 +6,7 @@ android {
     defaultConfig {
         applicationId "com.proximosolutions.nvoycustomer3"
         minSdkVersion 16
+        multiDexEnabled true
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
@@ -17,6 +18,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 
 dependencies {
@@ -34,7 +36,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
 
     compile 'com.sothree.slidinguppanel:library:3.3.1'
-
+    compile 'com.android.support:multidex:1.0.1'
     compile 'com.github.clans:fab:1.6.4'
     compile 'com.getbase:floatingactionbutton:1.10.1'
     compile 'com.google.firebase:firebase-messaging:10.2.1'
