@@ -22,7 +22,7 @@ public class Location implements Serializable {
         return latitude;
     }
 
-    public void setLatitude(String altitude) {
-        this.latitude = altitude;
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
     }
 }

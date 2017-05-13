@@ -1,5 +1,6 @@
 package com.proximosolutions.nvoycustomer3.Controller;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -9,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.multidex.MultiDex;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -90,18 +92,25 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.splash_screen);
+        mLoginFormView = findViewById(R.id.login_form);
+        mProgressView = findViewById(R.id.login_progress);
         mAuth = FirebaseAuth.getInstance();
+
+
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
+                //showProgress(true);
                 if (user != null) {
-
+                    //showProgress(true);
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                     DatabaseReference dataReference = database.getReference();
-                    //showProgress(true);
+
                     dataReference.child("Customers").child(EncodeString(user.getEmail())).addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -115,31 +124,21 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 mAuth.signOut();
                             }else{
                                 if(customer.isActive()){
-                                    /*Intent mainWindow = new Intent(LoginActivity.this,MainWindow.class);
-                                    startActivity(mainWindow);
-                                    finish();*/
+
                                     Intent mapsActivity = new Intent(LoginActivity.this,MapsActivity.class);
                                     mapsActivity.putExtra("userID",FirebaseAuth.getInstance().getCurrentUser().getEmail());
                                     startActivity(mapsActivity);
-
                                     mapsActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-                                    Log.d("User Status","Maps Opened!");
+                                    Log.d("User Status","Maps Opened1!");
                                 }else{
                                     Toast.makeText(LoginActivity.this, "Suspended User detected!",
                                             Toast.LENGTH_SHORT).show();
                                     Log.d("User Status","Signed out: suspended user");
                                     FirebaseAuth.getInstance().signOut();
-                                    //onDestroy();
-
-                                        /*Intent broadcastIntent = new Intent();
-                                        broadcastIntent.setAction("com.package.ACTION_LOGOUT");
-                                        sendBroadcast(broadcastIntent);*/
-
-                                    Intent loginActivity = new Intent(LoginActivity.this,LoginActivity.class);
+                                     Intent loginActivity = new Intent(LoginActivity.this,LoginActivity.class);
                                     startActivity(loginActivity);
                                     loginActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
+                                    Log.d("User Status","Login Opened1!");
                                 }
                             }
                             //showProgress(false);
@@ -153,6 +152,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                     //
                 } else {
+                    setContentView(R.layout.activity_login);
+                    mLoginFormView = findViewById(R.id.login_form);
+                    mProgressView = findViewById(R.id.login_progress);
                     mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
                     populateAutoComplete();
 
@@ -176,12 +178,22 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         }
                     });
 
-                    mLoginFormView = findViewById(R.id.login_form);
-                    mProgressView = findViewById(R.id.login_progress);
+
                 }
                 // ...
             }
         };
+
+        /*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,new String[]   {
+                        Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},PackageManager.PERMISSION_GRANTED);
+
+
+
+                return;
+            }
+        }*/
 
     }
 
@@ -249,6 +261,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
+
+        showProgress(true);
         if (mAuth == null) {
             return;
         }
@@ -303,6 +317,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             // the auth state listener will be notified and logic to handle the
                             // signed in user can be handled in the listener.
                             if (!task.isSuccessful()) {
+                                showProgress(false);
                                 Log.w("signInWithEmail", task.getException());
 
                                 Toast.makeText(LoginActivity.this, "Authentication failed.",
@@ -319,7 +334,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 dataReference.child("Customers").child(EncodeString(email)).addValueEventListener(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
-
+                                        showProgress(false);
                                         Customer customer = dataSnapshot.getValue(Customer.class);
                                         if(customer==null){
                                             Log.d("Null Customer","Null customer detected");
@@ -337,8 +352,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                             Intent loginActivity = new Intent(LoginActivity.this,LoginActivity.class);
                                             startActivity(loginActivity);
                                             loginActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
+                                            Log.d("User Status","Login Opened2!");
                                         }else{
+                                            showProgress(false);
                                             if(customer.isActive()){
                                                 Toast.makeText(LoginActivity.this, "Logged In!",
                                                         Toast.LENGTH_SHORT).show();
@@ -351,17 +367,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                                         Toast.LENGTH_SHORT).show();
                                                 Log.d("User Status","Signed out: suspended user");
                                                 FirebaseAuth.getInstance().signOut();
-                                                //onDestroy();
 
-                                        /*Intent broadcastIntent = new Intent();
-                                        broadcastIntent.setAction("com.package.ACTION_LOGOUT");
-                                        sendBroadcast(broadcastIntent);*/
+                                                Intent loginActivity = new Intent(LoginActivity.this,LoginActivity.class);
+                                                startActivity(loginActivity);
+                                                loginActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-                                                Intent mapsActivity = new Intent(LoginActivity.this,MapsActivity.class);
+
+                                              /*  Intent mapsActivity = new Intent(LoginActivity.this,MapsActivity.class);
                                                 mapsActivity.putExtra("userID",FirebaseAuth.getInstance().getCurrentUser().getEmail());
                                                 startActivity(mapsActivity);
-
-                                                mapsActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
+*/
+                                                //mapsActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                                                 Toast.makeText(LoginActivity.this, "Open Maps!",
                                                         Toast.LENGTH_SHORT).show();

@@ -77,6 +77,7 @@ public class RecipientsActivity extends AppCompatActivity
         android.support.v7.app.ActionBar actionBar = getSupportActionBar();
         actionBar.setHomeButtonEnabled(true);
         actionBar.setDisplayHomeAsUpEnabled(true);
+
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference();
         databaseReference.child("Customers").child(EncodeString(FirebaseAuth.getInstance().getCurrentUser().getEmail()))

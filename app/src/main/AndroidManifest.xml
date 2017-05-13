@@ -46,7 +46,8 @@
 
         <activity
             android:name=".Controller.MapsActivity"
-            android:label="@string/title_activity_maps" />
+            android:label="@string/title_activity_maps"
+            android:windowSoftInputMode="stateHidden"/>
         <activity android:name=".Controller.RecipientsActivity"
             android:label="Recipients"
             android:windowSoftInputMode="stateHidden">
@@ -57,7 +58,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".Controller.ParcelsActivity"
-            android:label="Parcels">
+            android:label="Parcels"
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -83,6 +85,17 @@
             </intent-filter>
 
         </activity>
+
+        <activity android:name=".Controller.ParcelProfile"
+            android:label="Parcel Details">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.ALTERNATIVE" />
+            </intent-filter>
+
+        </activity>
+
         <service
             android:name=".Controller.NvoyFirebaseMessagingService">
             <intent-filter>
