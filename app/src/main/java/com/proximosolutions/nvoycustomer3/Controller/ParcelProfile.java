@@ -165,6 +165,7 @@ public class ParcelProfile extends AppCompatActivity {
     }
 
     private void updateView(){
+        ((android.support.design.widget.CollapsingToolbarLayout)findViewById(R.id.user_profile_toolbar)).setTitle(currentParcel.getParcelID());
         ((TextView)findViewById(R.id.text_parcel_contact_courier)).setText(courier.getContactNumber());
         ((TextView)findViewById(R.id.text_parcel_contact_courier)).setOnClickListener(new View.OnClickListener() {
             @Override
