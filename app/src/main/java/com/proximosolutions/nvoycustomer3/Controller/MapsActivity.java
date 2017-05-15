@@ -86,6 +86,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ConfigInfo nvoyConfigInfo;
     private Parcel trackingParcel;
     private ProgressDialog progressDialog;
+    private Spinner spinner;
 
 
     @Override
@@ -99,6 +100,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
         updateConfigInfo();
+        if (getIntent().getBooleanExtra("EXIT", false)) {
+            finish();
+        }
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -131,8 +135,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         profileBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent profileActivity = new Intent(MapsActivity.this, ProfileActivity.class);
-                startActivity(profileActivity);
+                Intent userProfile = new Intent(MapsActivity.this,UserProfile.class);
+
+
+                userProfile.putExtra("customer",currentUser);
+                userProfile.putExtra("customerState","Unknown");
+                userProfile.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                //databaseReference.child("Couriers").child(EncodeString(((TextView)childText.findViewById(R.id.child_text)).getText().toString().trim())).removeEventListener(this);
+                startActivity(userProfile);
             }
         });
 
@@ -156,8 +166,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     ((Button) findViewById(R.id.btn_add_delivery_accept)).setError("Confirm Selection!");
                 } else {
                     ((Button) findViewById(R.id.btn_add_delivery_accept)).setError(null);
-                    final Spinner spinner = (Spinner) findViewById(R.id.spinner_recipients);
-                    spinner.setSelection(0);
+                    calculateFair();
                 }
             }
         });
@@ -342,29 +351,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
 
-        final Spinner spinner = (Spinner) findViewById(R.id.spinner_recipients);
+        spinner = (Spinner) findViewById(R.id.spinner_recipients);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if (recipients.size() != 0 && currentCourier != null) {
-                    currentRecipient = recipients.get(spinner.getSelectedItemPosition());
-                    LatLng senderLoc = new LatLng(Double.parseDouble(currentUser.getLocation().getLatitude()), Double.parseDouble(currentUser.getLocation().getLongitude().toString()));
-                    LatLng receiverLoc = new LatLng(Double.parseDouble(currentRecipient.getLocation().getLatitude()), Double.parseDouble(currentRecipient.getLocation().getLongitude().toString()));
-                    Double distance = SphericalUtil.computeDistanceBetween(senderLoc, receiverLoc);
-                    int deliveryFair = (int) (((distance - 2) / 1000) * nvoyConfigInfo.getNormalDeliveryChargePerKM()
-                            + nvoyConfigInfo.getNormalDeliveryFixedCharge());
-                    ((TextView) findViewById(R.id.text_delivery_fair)).setText("Delivery Fair : " + deliveryFair + ".0 LKR");
-                    currentParcel = new Parcel();
-                    currentParcel.setSenderID(currentUser.getUserID());
-                    currentParcel.setReceiverID(currentRecipient.getUserID());
-                    currentParcel.setCarrierID(currentCourier.getUserID());
-                    currentParcel.setCurrentLocation(currentUser.getLocation());
-                    currentParcel.setDeliveryFair(deliveryFair);
-                    currentParcel.setStatus(Parcel.NEW);
-
-
-                }
-
+                calculateFair();
             }
 
             @Override
@@ -374,6 +365,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
 
+
+
+
+    }
+
+    private void calculateFair(){
+        if (recipients.size() != 0 && currentCourier != null) {
+            currentRecipient = recipients.get(spinner.getSelectedItemPosition());
+            LatLng senderLoc = new LatLng(Double.parseDouble(currentUser.getLocation().getLatitude()), Double.parseDouble(currentUser.getLocation().getLongitude().toString()));
+            LatLng receiverLoc = new LatLng(Double.parseDouble(currentRecipient.getLocation().getLatitude()), Double.parseDouble(currentRecipient.getLocation().getLongitude().toString()));
+            Double distance = SphericalUtil.computeDistanceBetween(senderLoc, receiverLoc);
+            int deliveryFair = (int) (((distance - 2) / 1000) * nvoyConfigInfo.getNormalDeliveryChargePerKM()
+                    + nvoyConfigInfo.getNormalDeliveryFixedCharge());
+            ((TextView) findViewById(R.id.text_delivery_fair)).setText("Delivery Fair : " + deliveryFair + ".0 LKR");
+            currentParcel = new Parcel();
+            currentParcel.setSenderID(currentUser.getUserID());
+            currentParcel.setReceiverID(currentRecipient.getUserID());
+            currentParcel.setCarrierID(currentCourier.getUserID());
+            currentParcel.setCurrentLocation(currentUser.getLocation());
+            currentParcel.setDeliveryFair(deliveryFair);
+            currentParcel.setStatus(Parcel.NEW);
+
+
+        }
     }
 
     private void showProgressWindow(boolean state) {
@@ -483,23 +498,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return;
             }
         }
-        //onRequestPermissionsResult(PackageManager.PERMISSION_GRANTED,new String[]   {
-              //  Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},
-              //  new int[]{PackageManager.PERMISSION_GRANTED,PackageManager.PERMISSION_GRANTED}){
 
-
-
-
-        /*if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }*/
         mMap.setMyLocationEnabled(true);
         Toast.makeText(this, "Connected",
                 Toast.LENGTH_SHORT).show();
@@ -514,8 +513,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try{
             //mMap.setMyLocationEnabled(true);
             LocationServices.FusedLocationApi.requestLocationUpdates(mClient,mLocationReq,this);
-            Location l = LocationServices.FusedLocationApi.getLastLocation(
-                    mClient);
+            Location l = LocationServices.FusedLocationApi.getLastLocation(mClient);
             LatLng ll = new LatLng(l.getLatitude(),l.getLongitude());
             CameraUpdate camUpdate = CameraUpdateFactory.newLatLngZoom(ll,15);
             mMap.animateCamera(camUpdate);
@@ -548,6 +546,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void updateMyLocation(LatLng location){
         if(currentUser!=null){
+            currentUser.setLocation(new com.proximosolutions.nvoycustomer3.MainLogic.Location());
             currentUser.getLocation().setLatitude(String.valueOf(location.latitude));
             currentUser.getLocation().setLongitude(String.valueOf(location.longitude));
             FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -600,6 +599,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.myself))
                     .position(ll);
             marker = mMap.addMarker(markerOptions);
+            updateMyLocation(ll);
 
 
         }
@@ -715,6 +715,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     ArrayList<Marker> markers;
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
 
     public void addCourierMarkers(ArrayList<Courier> couriers){
         if(markers!=null){

@@ -3,6 +3,8 @@ package com.proximosolutions.nvoycustomer3.Controller;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
@@ -61,6 +63,18 @@ public class UserProfile extends AppCompatActivity {
                     ((TextView)findViewById(R.id.user_is_active)).setText("Valid Recipient");
                     ((Button)findViewById(R.id.btn_suspend_courier)).setText("Remove");
                 }
+
+                if(customerState.equals("Unknown")){
+                    ((TextView)findViewById(R.id.user_is_active)).setText("Active User");
+                    ((Button)findViewById(R.id.btn_suspend_courier)).setText("");
+                    ((Button)findViewById(R.id.btn_suspend_courier)).setActivated(false);
+                }
+
+
+
+
+
+
                 //((Button)findViewById(R.id.button_parcels)).setText("");
 
                 /*if(extras.get("isActive").equals(true)){
@@ -113,10 +127,37 @@ public class UserProfile extends AppCompatActivity {
                 ((Button)findViewById(R.id.btn_suspend_courier)).setText("Remove");
             }
 
+            if(customerState.equals("Unknown")){
+                ((TextView)findViewById(R.id.user_is_active)).setText("Active User");
+                ((Button)findViewById(R.id.btn_suspend_courier)).setText("");
+                ((Button)findViewById(R.id.btn_suspend_courier)).setActivated(false);
+            }
+
 
 
 
         }
+
+        ((TextView)findViewById(R.id.user_contact_no)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String number = ((TextView)findViewById(R.id.user_contact_no)).getText().toString();
+                Uri call = Uri.parse("tel:" + number);
+                Intent surf = new Intent(Intent.ACTION_DIAL, call);
+                startActivity(surf);
+            }
+        });
+
+        ((TextView)findViewById(R.id.btn_view_parcels)).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent parcelsActivity = new Intent(UserProfile.this, ParcelsActivity.class);
+                startActivity(parcelsActivity);
+            }
+        });
+
+
+
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         final DatabaseReference databaseReference = firebaseDatabase.getReference();
         suspendBtn = (Button) findViewById(R.id.btn_suspend_courier);

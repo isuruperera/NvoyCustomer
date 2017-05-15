@@ -56,201 +56,213 @@
             android:id="@+id/activity_user_profile"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:orientation="horizontal"
             android:paddingBottom="0dp"
             android:paddingLeft="0dp"
             android:paddingRight="0dp"
             android:paddingTop="0dp"
-            tools:context="com.proximosolutions.nvoyadmin.Controller.UserProfile"
-            android:orientation="horizontal"
             android:weightSum="1"
-            >
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="10dp"
-    android:divider="?android:listDivider"
-    android:showDividers="middle"
-    >
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
+            tools:context="com.proximosolutions.nvoyadmin.Controller.UserProfile">
 
-        android:paddingTop="0dp"
-        >
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:layout_gravity="start"
-            android:layout_weight="1"
-            android:text="REMOVE"
-            android:id="@+id/btn_remove_parcel"
-            android:background="@drawable/ripple_effect"
-            android:textColor="@color/common_google_signin_btn_text_dark_default"
-            android:textSize="20dp"
-            android:layout_marginRight="0.5dp"
-            />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="?android:listDivider"
+                android:orientation="vertical"
+                android:paddingBottom="10dp"
+                android:showDividers="middle">
 
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:layout_gravity="end"
-            android:layout_weight="1"
-            android:text="TRACK PARCEL"
-            android:id="@+id/btn_track_parcel"
-            android:background="@drawable/ripple_effect"
-            android:textColor="@color/common_google_signin_btn_text_dark_default"
-            android:textSize="20dp"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:paddingRight="@dimen/activity_vertical_margin">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Receiver"
-            android:paddingTop="10dp"
-            />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Receiver Name"
-            android:textSize="20dp"
-            android:paddingBottom="5dp"
-            android:id="@+id/text_parcel_receiver"/>
+                    android:paddingTop="0dp">
 
-    </LinearLayout>
+                    <Button
+                        android:id="@+id/btn_remove_parcel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:layout_gravity="start"
+                        android:layout_marginRight="0.5dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/ripple_effect"
+                        android:text="REMOVE"
+                        android:textColor="@color/common_google_signin_btn_text_dark_default"
+                        android:textSize="15dp" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:paddingRight="@dimen/activity_vertical_margin">
+                    <Button
+                        android:id="@+id/btn_track_parcel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:layout_gravity="end"
+                        android:layout_weight="1"
+                        android:background="@drawable/ripple_effect"
+                        android:text="TRACK PARCEL"
+                        android:textColor="@color/common_google_signin_btn_text_dark_default"
+                        android:textSize="15dp"
+                        android:layout_marginRight="0.5dp"/>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Contact Receiver"
-            android:maxLines="1"
-            android:paddingTop="2dp"
-            android:paddingBottom="0dp"
-            />
+                    <Button
+                        android:id="@+id/btn_view_location"
+                        android:layout_width="wrap_content"
+                        android:layout_height="60dp"
+                        android:layout_gravity="start"
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Receiver Contact No"
-            android:textSize="20dp"
-            android:paddingBottom="5dp"
-            android:id="@+id/text_parcel_contact_receiver"/>
+                        android:layout_weight="1"
+                        android:background="@drawable/ripple_effect"
+                        android:text="View Location"
+                        android:textColor="@color/common_google_signin_btn_text_dark_default"
+                        android:textSize="15dp" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="@dimen/activity_vertical_margin">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="10dp"
+                        android:text="Receiver" />
+
+                    <TextView
+                        android:id="@+id/text_parcel_receiver"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="5dp"
+                        android:text="Receiver Name"
+                        android:textSize="20dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="@dimen/activity_vertical_margin">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:paddingBottom="0dp"
+                        android:paddingTop="2dp"
+                        android:text="Contact Receiver" />
+
+                    <TextView
+                        android:id="@+id/text_parcel_contact_receiver"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="5dp"
+                        android:text="Receiver Contact No"
+                        android:textSize="20dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="@dimen/activity_vertical_margin">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="2dp"
+                        android:text="Courier" />
+
+                    <TextView
+                        android:id="@+id/text_parcel_courier"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="5dp"
+                        android:text="Courier Name"
+                        android:textSize="20dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="@dimen/activity_vertical_margin">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="2dp"
+                        android:text="Contact Courier" />
+
+                    <TextView
+                        android:id="@+id/text_parcel_contact_courier"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="5dp"
+                        android:text="Courier Contact No"
+                        android:textSize="20dp" />
+
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="@dimen/activity_vertical_margin">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="2dp"
+                        android:text="Parcel Status"
+
+                        />
+
+                    <TextView
+                        android:id="@+id/text_parcel_status"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="5dp"
+                        android:text="Parcel Status"
+                        android:textSize="20dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="@dimen/activity_vertical_margin">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="2dp"
+                        android:text="Delivery Fair"
+
+                        />
+
+                    <TextView
+                        android:id="@+id/text_parcel_delivery_fair"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="5dp"
+                        android:text="Delivery Fair"
+                        android:textSize="20dp" />
+                </LinearLayout>
+            </LinearLayout>
+
 
         </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:paddingRight="@dimen/activity_vertical_margin">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Courier"
-            android:paddingTop="2dp"
-            />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Courier Name"
-            android:textSize="20dp"
-            android:paddingBottom="5dp"
-            android:id="@+id/text_parcel_courier"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:paddingRight="@dimen/activity_vertical_margin">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Contact Courier"
-            android:paddingTop="2dp"
-            />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Courier Contact No"
-            android:textSize="20dp"
-            android:paddingBottom="5dp"
-            android:id="@+id/text_parcel_contact_courier"/>
-
-        </LinearLayout>
-
-
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:paddingRight="@dimen/activity_vertical_margin">
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Parcel Status"
-        android:paddingTop="2dp"
-
-        />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Parcel Status"
-            android:textSize="20dp"
-            android:paddingBottom="5dp"
-            android:id="@+id/text_parcel_status"/>
-        </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="10dp"
-        android:paddingRight="@dimen/activity_vertical_margin">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Delivery Fair"
-            android:paddingTop="2dp"
-
-            />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Delivery Fair"
-            android:textSize="20dp"
-            android:paddingBottom="5dp"
-            android:id="@+id/text_parcel_delivery_fair"/>
-    </LinearLayout>
-    </LinearLayout>
-
-
-
-
-</LinearLayout>
     </android.support.v4.widget.NestedScrollView>
 </android.support.design.widget.CoordinatorLayout>

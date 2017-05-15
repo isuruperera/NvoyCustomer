@@ -27,6 +27,7 @@ public class ParcelProfile extends AppCompatActivity {
 
     private Button removeParcelBtn;
     private Button trackParcelBtn;
+    private Button viewLocationBtn;
     private Button viewTransactionsBtn;
     private String currentUserType;
     private String customerState;
@@ -116,6 +117,47 @@ public class ParcelProfile extends AppCompatActivity {
         });
 
         trackParcelBtn = (Button) findViewById(R.id.btn_track_parcel);
+        trackParcelBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Uri gmmIntentUri;
+                if(currentParcel.getStatus()==Parcel.ACCEPTED){
+
+                    StringBuilder uriString = new StringBuilder("google.navigation:q=");
+                    uriString.append(currentParcel.getCurrentLocation().getLatitude());
+                    uriString.append(",");
+                    uriString.append(currentParcel.getCurrentLocation().getLongitude());
+                    uriString.append("&avoid=tf");
+
+                    gmmIntentUri = Uri.parse(uriString.toString());
+                    Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                    mapIntent.setPackage("com.google.android.apps.maps");
+                    startActivity(mapIntent);
+
+
+
+                }
+
+
+
+            }
+        });
+
+        viewLocationBtn = (Button) findViewById(R.id.btn_view_location);
+        viewLocationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                StringBuilder uriString = new StringBuilder("google.streetview:cbll=");
+                uriString.append(currentParcel.getCurrentLocation().getLatitude());
+                uriString.append(",");
+                uriString.append(currentParcel.getCurrentLocation().getLongitude());
+
+                Uri gmmIntentUri = Uri.parse(uriString.toString());
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+                mapIntent.setPackage("com.google.android.apps.maps");
+                startActivity(mapIntent);
+            }
+        });
 
 
 

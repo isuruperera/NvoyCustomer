@@ -98,7 +98,7 @@
             android:layout_gravity="end"
             android:layout_weight="1"
             android:text="View Parcels"
-            android:id="@+id/btn_view_transactions_courier"
+            android:id="@+id/btn_view_parcels"
             android:background="@drawable/ripple_effect"
             android:textColor="@color/common_google_signin_btn_text_dark_default"
             android:textSize="20dp"/>

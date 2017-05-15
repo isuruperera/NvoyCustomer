@@ -1,16 +1,15 @@
 package com.proximosolutions.nvoycustomer3.Controller;
 
-import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.multidex.MultiDex;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -89,24 +88,43 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mLoginFormView;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
+    private Button signUpBtn;
+    private ProgressDialog progressDialog;
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.splash_screen);
+        setContentView(R.layout.activity_login);
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
         mAuth = FirebaseAuth.getInstance();
-
-
+        signUpBtn = (Button)findViewById(R.id.email_sign_up_button);
+        signUpBtn.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent signUp = new Intent(LoginActivity.this,SignUp.class);
+                System.out.println("TAG SGUP");
+                signUp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(signUp);
+            }
+        });
+        showProgressWindow(true);
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                //showProgress(true);
+                //showProgressWindow(true);
+
                 if (user != null) {
+                    showProgressWindow(true);
                     //showProgress(true);
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                     DatabaseReference dataReference = database.getReference();
@@ -116,21 +134,26 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             Customer customer = dataSnapshot.getValue(Customer.class);
                             if(customer==null){
+                                showProgressWindow(false);
                                 Log.d("Null Customer","Null customer detected");
                                 Log.d("User Status","Signed out");
                                 Toast.makeText(LoginActivity.this, "Invalid User!",
                                         Toast.LENGTH_SHORT).show();
                                 Log.d("User Status","Signed out: invalid user");
                                 mAuth.signOut();
+
                             }else{
                                 if(customer.isActive()){
 
+                                    showProgressWindow(false);
                                     Intent mapsActivity = new Intent(LoginActivity.this,MapsActivity.class);
                                     mapsActivity.putExtra("userID",FirebaseAuth.getInstance().getCurrentUser().getEmail());
                                     startActivity(mapsActivity);
                                     mapsActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                     Log.d("User Status","Maps Opened1!");
+
                                 }else{
+                                    showProgressWindow(false);
                                     Toast.makeText(LoginActivity.this, "Suspended User detected!",
                                             Toast.LENGTH_SHORT).show();
                                     Log.d("User Status","Signed out: suspended user");
@@ -139,9 +162,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                     startActivity(loginActivity);
                                     loginActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                     Log.d("User Status","Login Opened1!");
+
                                 }
                             }
                             //showProgress(false);
+
                         }
 
                         @Override
@@ -149,10 +174,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                         }
                     });
-
+                    showProgressWindow(false);
                     //
                 } else {
-                    setContentView(R.layout.activity_login);
+                    showProgressWindow(false);
+                    //setContentView(R.layout.activity_login);
                     mLoginFormView = findViewById(R.id.login_form);
                     mProgressView = findViewById(R.id.login_progress);
                     mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -184,16 +210,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         };
 
-        /*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,new String[]   {
-                        Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION},PackageManager.PERMISSION_GRANTED);
 
-
-
-                return;
-            }
-        }*/
 
     }
 
@@ -262,8 +279,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     private void attemptLogin() {
 
-        showProgress(true);
+        showProgressWindow(true);
         if (mAuth == null) {
+            showProgressWindow(false);
             return;
         }
 
@@ -299,12 +317,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
+            showProgressWindow(false);
             focusView.requestFocus();
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true);
+            //showProgressWindow(true);
             //Log.w("signIn start first "));
+            //showProgressWindow(true);
             Toast.makeText(LoginActivity.this, "Authentication start",
                     Toast.LENGTH_SHORT).show();
             mAuth.signInWithEmailAndPassword(email, password)
@@ -316,13 +336,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             // If sign in fails, display a message to the user. If sign in succeeds
                             // the auth state listener will be notified and logic to handle the
                             // signed in user can be handled in the listener.
+                            //showProgressWindow(false);
                             if (!task.isSuccessful()) {
-                                showProgress(false);
+                                //showProgress(false);
+                                LoginActivity.this.showProgressWindow(false);
                                 Log.w("signInWithEmail", task.getException());
-
                                 Toast.makeText(LoginActivity.this, "Authentication failed.",
                                         Toast.LENGTH_SHORT).show();
-                                showProgress(false);
+                                //showProgress(false);
                                 ((TextView)findViewById(R.id.password)).setError("Wrong Password!");
 
                             }else{
@@ -331,12 +352,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 FirebaseDatabase database = FirebaseDatabase.getInstance();
                                 DatabaseReference dataReference = database.getReference();
 
-                                dataReference.child("Customers").child(EncodeString(email)).addValueEventListener(new ValueEventListener() {
+                                dataReference.child("Customers").child(EncodeString(email)).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
                                     public void onDataChange(DataSnapshot dataSnapshot) {
-                                        showProgress(false);
+                                        showProgressWindow(false);
                                         Customer customer = dataSnapshot.getValue(Customer.class);
                                         if(customer==null){
+                                            showProgressWindow(false);
                                             Log.d("Null Customer","Null customer detected");
                                             Log.d("User Status","Signed out");
                                             Toast.makeText(LoginActivity.this, "Invalid User!",
@@ -348,14 +370,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                         /*Intent broadcastIntent = new Intent();
                                         broadcastIntent.setAction("com.package.ACTION_LOGOUT");
                                         sendBroadcast(broadcastIntent);*/
-
+                                            //showProgressWindow(false);
                                             Intent loginActivity = new Intent(LoginActivity.this,LoginActivity.class);
                                             startActivity(loginActivity);
                                             loginActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
                                             Log.d("User Status","Login Opened2!");
                                         }else{
-                                            showProgress(false);
+                                            //showProgress(false);
+
                                             if(customer.isActive()){
+                                                showProgressWindow(false);
                                                 Toast.makeText(LoginActivity.this, "Logged In!",
                                                         Toast.LENGTH_SHORT).show();
                                                 Intent mapsActivity = new Intent(LoginActivity.this,MapsActivity.class);
@@ -363,6 +387,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                                 startActivity(mapsActivity);
 
                                             }else{
+                                                showProgressWindow(false);
                                                 Toast.makeText(LoginActivity.this, "Suspended User detected!",
                                                         Toast.LENGTH_SHORT).show();
                                                 Log.d("User Status","Signed out: suspended user");
@@ -372,18 +397,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                                 startActivity(loginActivity);
                                                 loginActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-
-                                              /*  Intent mapsActivity = new Intent(LoginActivity.this,MapsActivity.class);
-                                                mapsActivity.putExtra("userID",FirebaseAuth.getInstance().getCurrentUser().getEmail());
-                                                startActivity(mapsActivity);
-*/
-                                                //mapsActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
                                                 Toast.makeText(LoginActivity.this, "Open Maps!",
                                                         Toast.LENGTH_SHORT).show();
                                             }
                                         }
-                                        showProgress(false);
+                                        //showProgress(false);
                                     }
 
                                     @Override
@@ -400,7 +418,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                         }
                     });
-
+            //showProgressWindow(false);
             //showProgress(false);
             //mAuthTask = new UserLoginTask(email, password);
             // mAuthTask.execute((Void) null);
@@ -519,7 +537,19 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        //finish();
 
     }
+
+    private void showProgressWindow(boolean state) {
+        if (state) {
+
+            progressDialog = progressDialog.show(this, "Login", "Please wait...", false, false);
+        } else {
+            progressDialog.dismiss();
+        }
+
+    }
+
 }
 
