@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NvoyCustomer</string>
+    <string name="app_name">Nvoy Customer</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
@@ -13,6 +13,9 @@
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="contact_courier">CALL COURIER</string>
     <string name="cancel_contact_courier">LATER</string>
+    <string name="btn_ok">OK</string>
+    <string name="btn_yes">YES</string>
+    <string name="btn_no">NO</string>
     <string name="error_field_required">This field is required</string>
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."

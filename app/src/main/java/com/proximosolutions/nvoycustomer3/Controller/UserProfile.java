@@ -49,53 +49,9 @@ public class UserProfile extends AppCompatActivity {
                 ((TextView)findViewById(R.id.user_nic)).setText(((Customer)extras.get("customer")).getNic());
 
                 customerState = (String)extras.get("customerState");
-                if(customerState.equals("Pending Request")){
-                    ((TextView)findViewById(R.id.user_is_active)).setText("Pending Request");
-                    ((Button)findViewById(R.id.btn_suspend_courier)).setText("Remove");
-                }
-
-                if(customerState.equals("New Request!")){
-                    ((TextView)findViewById(R.id.user_is_active)).setText("New Request");
-                    ((Button)findViewById(R.id.btn_suspend_courier)).setText("Accept");
-                }
-
-                if(customerState.equals("Valid Recipient")){
-                    ((TextView)findViewById(R.id.user_is_active)).setText("Valid Recipient");
-                    ((Button)findViewById(R.id.btn_suspend_courier)).setText("Remove");
-                }
-
-                if(customerState.equals("Unknown")){
-                    ((TextView)findViewById(R.id.user_is_active)).setText("Active User");
-                    ((Button)findViewById(R.id.btn_suspend_courier)).setText("");
-                    ((Button)findViewById(R.id.btn_suspend_courier)).setActivated(false);
-                }
+                setCustomerState(customerState);
 
 
-
-
-
-
-                //((Button)findViewById(R.id.button_parcels)).setText("");
-
-                /*if(extras.get("isActive").equals(true)){
-                    ((TextView)findViewById(R.id.user_is_active)).setText("Active");
-                    ((Button)findViewById(R.id.btn_suspend_courier)).setText("Suspend");
-                }else{
-                    ((TextView)findViewById(R.id.user_is_active)).setText("Suspended");
-                    ((Button)findViewById(R.id.btn_suspend_courier)).setText("Activate");
-                }
-                if(extras.get("isCourier").equals(true)){
-                    if(extras.get("type").equals(true)){
-                        ((TextView)findViewById(R.id.user_type)).setText("Express Courier");
-                    }else{
-                        ((TextView)findViewById(R.id.user_type)).setText("Regular Courier");
-                    }
-                    //currentUserType = "Couriers";
-                }else{
-                    ((TextView)findViewById(R.id.user_type)).setText("Customer");
-                    //currentUserType = "Customers";
-
-                }*/
 
             }
         }else{
@@ -106,34 +62,12 @@ public class UserProfile extends AppCompatActivity {
                             +" "+((Customer)savedInstanceState
                             .getSerializable("customer"))
                             .getLastName());
-            //((android.support.design.widget.CollapsingToolbarLayout)findViewById(R.id.user_profile_toolbar)).set
-            //String s = extras.get("email").toString();
+
             ((TextView)findViewById(R.id.user_email)).setText(DecodeString(((Customer)savedInstanceState.getSerializable("customer")).getUserID()));
             ((TextView)findViewById(R.id.user_contact_no)).setText(((Customer)savedInstanceState.getSerializable("customer")).getContactNumber());
             ((TextView)findViewById(R.id.user_nic)).setText(((Customer)savedInstanceState.getSerializable("customer")).getNic());
             customerState = (String)savedInstanceState.getSerializable("customerState");
-            if(customerState.equals("Pending Request")){
-                ((TextView)findViewById(R.id.user_is_active)).setText("Pending Request");
-                ((Button)findViewById(R.id.btn_suspend_courier)).setText("Cancel");
-            }
-
-            if(customerState.equals("New Request!")){
-                ((TextView)findViewById(R.id.user_is_active)).setText("New Request");
-                ((Button)findViewById(R.id.btn_suspend_courier)).setText("Accept");
-            }
-
-            if(customerState.equals("Valid Customer")){
-                ((TextView)findViewById(R.id.user_is_active)).setText("Valid Recipient");
-                ((Button)findViewById(R.id.btn_suspend_courier)).setText("Remove");
-            }
-
-            if(customerState.equals("Unknown")){
-                ((TextView)findViewById(R.id.user_is_active)).setText("Active User");
-                ((Button)findViewById(R.id.btn_suspend_courier)).setText("");
-                ((Button)findViewById(R.id.btn_suspend_courier)).setActivated(false);
-            }
-
-
+            setCustomerState(customerState);
 
 
         }
@@ -191,6 +125,8 @@ public class UserProfile extends AppCompatActivity {
                                                             .getInstance()
                                                             .getCurrentUser().getEmail()))
                                                     .setValue("Removed");
+                                            customerState = "Removed";
+                                            setCustomerState(customerState);
                                             onBackPressed();
                                             Log.d("Recipient","Pending Recipient Removed");
                                         }
@@ -215,6 +151,8 @@ public class UserProfile extends AppCompatActivity {
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
 
+                                            ((Button)findViewById(R.id.btn_suspend_courier)).setText("Remove");
+                                            ((Button)findViewById(R.id.btn_suspend_courier)).setActivated(false);
                                             databaseReference.child("Customers")
                                                     .child(EncodeString(FirebaseAuth
                                                             .getInstance()
@@ -230,6 +168,8 @@ public class UserProfile extends AppCompatActivity {
                                                             .getInstance()
                                                             .getCurrentUser().getEmail()))
                                                     .setValue("Accepted");
+                                            customerState = "Valid Recipient";
+                                            setCustomerState(customerState);
 
                                             Log.d("Recipient","New Recipient Accepted");
                                         }
@@ -269,6 +209,8 @@ public class UserProfile extends AppCompatActivity {
                                                             .getInstance()
                                                             .getCurrentUser().getEmail()))
                                                     .setValue("Removed");
+                                            customerState = "Removed";
+                                            setCustomerState(customerState);
 
                                             Log.d("Recipient","Exsisting Recipient Removed");
                                         }
@@ -283,31 +225,35 @@ public class UserProfile extends AppCompatActivity {
                     AlertDialog alertDialog = alertDialogBuilder.create();
                     alertDialog.show();
                 }
-
-
-
-
-
-
-
-
-
-
             }
         });
 
-        /*IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.package.ACTION_LOGOUT");
-        registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Log.d("onReceive","Logout in progress");
-                //At this point you should start the login activity and finish this one
-                System.out.println("REC!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                finish();
-            }
-        }, intentFilter);
-*/
+    }
+
+    private void setCustomerState(String customerState){
+        if(customerState.equals("Pending Request")){
+            ((TextView)findViewById(R.id.user_is_active)).setText("Pending Request");
+            ((Button)findViewById(R.id.btn_suspend_courier)).setText("Remove");
+        }
+
+        if(customerState.equals("New Request!")){
+            ((TextView)findViewById(R.id.user_is_active)).setText("New Request");
+            ((Button)findViewById(R.id.btn_suspend_courier)).setText("Accept");
+        }
+
+        if(customerState.equals("Valid Recipient")){
+            ((TextView)findViewById(R.id.user_is_active)).setText("Valid Recipient");
+            ((Button)findViewById(R.id.btn_suspend_courier)).setText("Remove");
+        }
+
+        if(customerState.equals("Removed")){
+            ((TextView)findViewById(R.id.user_is_active)).setText("Removed user");
+            ((Button)findViewById(R.id.btn_suspend_courier)).setText("");
+            ((Button)findViewById(R.id.btn_suspend_courier)).setEnabled(false);
+            ((TextView)findViewById(R.id.user_contact_no)).setText("Unavailable");
+            ((TextView)findViewById(R.id.user_nic)).setText("Unavailable");
+
+        }
     }
 
     @Override

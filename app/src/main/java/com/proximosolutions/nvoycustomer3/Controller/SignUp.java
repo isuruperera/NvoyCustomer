@@ -42,9 +42,9 @@ public class SignUp extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-        android.support.v7.app.ActionBar actionBar = getSupportActionBar();
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setDisplayHomeAsUpEnabled(true);
+       // android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+        /*actionBar.setHomeButtonEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);*/
         firstName = (EditText)findViewById(R.id.sign_up_firstName);
         lastName = (EditText)findViewById(R.id.sign_up_lastName);
         nic = (EditText)findViewById(R.id.sign_up_national_ic);

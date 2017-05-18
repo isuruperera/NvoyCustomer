@@ -13,6 +13,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,7 +23,6 @@ import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.NotificationCompat;
-import android.support.v7.widget.SearchView;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -61,7 +61,6 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
@@ -87,6 +86,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Parcel trackingParcel;
     private ProgressDialog progressDialog;
     private Spinner spinner;
+    private String currentParcelKey;
+    private boolean acceptedOnce=false;
+    private LocationRequest mLocationReq;
+    private ArrayList<String> parcelsIDList;
+
 
 
     @Override
@@ -110,6 +114,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         nearbyCouriers = new ArrayList<>();
         recipients = new ArrayList<>();
+        parcelsIDList = new ArrayList<>();
         //currentParcel = new Parcel();
 
         recipientsBtn = (FloatingActionButton) findViewById(R.id.button_recipients);
@@ -145,6 +150,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 startActivity(userProfile);
             }
         });
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference dataReference = database.getReference();
+
+
+        dataReference.child("Customers").child(EncodeString(FirebaseAuth.getInstance().getCurrentUser().getEmail())).child("parcels")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Iterable<DataSnapshot> parcels = dataSnapshot.getChildren();
+                        recipient_emails = new ArrayList<String>();
+
+                        for (DataSnapshot parcel : parcels) {
+                            parcelsIDList.add(parcel.getKey().toString());
+
+                        }
+
+                        generateNewParcelNotification();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+
+
 
         slidingUpPanelLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
         slidingUpPanelLayout.setAnchorPoint((float) 0.14);
@@ -173,9 +205,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         userEmail = FirebaseAuth.getInstance().getCurrentUser().getEmail();
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference dataReference = database.getReference();
-        dataReference.child("Customers").child(EncodeString(userEmail)).child("friends")
+
+        dataReference.child("Customers").child(EncodeString(FirebaseAuth.getInstance().getCurrentUser().getEmail())).child("friends")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -194,7 +225,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 notificationBuilder.setSmallIcon(R.mipmap.ic_launcher);
                                 notificationBuilder.setContentIntent(pendingIntent);
                                 NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                                notificationManager.notify(0, notificationBuilder.build());
+                                int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
+                                notificationManager.notify(m, notificationBuilder.build());
                             }
 
                             if ((friend.getValue().toString()).equals("Accepted")) {
@@ -253,6 +285,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         final DatabaseReference dataReference = database.getReference();
                         final String key = dataReference.child("Parcels").push().getKey();
                         currentParcel.setParcelID(key);
+                        currentParcelKey = key;
                         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         String currentDateTime = dateFormat.format(new Date());
                         currentParcel.setLastUpdated(currentDateTime);
@@ -269,17 +302,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
                         showProgressWindow(true);
 
-                        dataReference.child("Parcels").child(key).addValueEventListener(new ValueEventListener() {
+                        dataReference.child("Parcels").child(currentParcelKey).addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 Parcel p = dataSnapshot.getValue(Parcel.class);
+                                currentParcel = p;
                                 if (p.getStatus() == Parcel.ACCEPTED) {
                                     showProgressWindow(false);
                                     currentCourierID = null;
-                                    currentCourier = null;
-                                    dataReference.child("Parcels").child(key).removeEventListener(this);
+                                    acceptedOnce = true;
                                     new AlertDialog.Builder(MapsActivity.this)
-                                            .setTitle("Courier has accepted your request!")
+                                            .setTitle("Parcel was marked as accepted!")
                                             .setMessage("You can contact courier now or you can access the details about " +
                                                     "your parcel from parcels menu. The courier will contact " +
                                                     "you before collecting the parcel.")
@@ -299,8 +332,61 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             })
                                             .setIcon(android.R.drawable.ic_dialog_alert)
                                             .show();
+
                                 } else if (p.getStatus() == Parcel.CANCELLED) {
+                                    dataReference.child("Parcels").child(currentParcelKey).removeEventListener(this);
                                     showProgressWindow(false);
+                                    new AlertDialog.Builder(MapsActivity.this)
+                                            .setTitle("Courier has rejected your request!")
+                                            .setMessage("Unfortunately, the courier has rejected your request, ID:"+currentParcelKey+". You can always try another courier.")
+
+                                            .setNegativeButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    dialog.dismiss();
+                                                }
+                                            })
+                                            .setIcon(android.R.drawable.ic_dialog_alert)
+                                            .show();
+                                }else if (p.getStatus() == Parcel.PICKUP) {
+                                    showProgressWindow(false);
+                                    new AlertDialog.Builder(MapsActivity.this)
+                                            .setTitle("Parcel has marked as picked up")
+                                            .setMessage("Did courier pick up the parcel from you?")
+                                            .setPositiveButton(R.string.btn_yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    changeParcelStatus(Parcel.IN_TRANSIT);
+                                                    dialog.dismiss();
+                                                }
+                                            })
+                                            .setNegativeButton(R.string.btn_no, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    changeParcelStatus(Parcel.CUST_MARKED_NOT_COLLECTED);
+                                                    dialog.dismiss();
+                                                }
+                                            })
+                                            .setIcon(android.R.drawable.ic_dialog_alert)
+                                            .show();
+
+                                }else if (p.getStatus() == Parcel.MARKED_DELIVERED && p.getReceiverID().equals(EncodeString(FirebaseAuth.getInstance().getCurrentUser().getEmail()))) {
+                                    showProgressWindow(false);
+                                    new AlertDialog.Builder(MapsActivity.this)
+                                            .setTitle("Parcel has marked as delivered")
+                                            .setMessage("Did courier deliver the parcel?")
+                                            .setPositiveButton(R.string.btn_yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    changeParcelStatus(Parcel.DELIVERED);
+                                                    dialog.dismiss();
+                                                }
+                                            })
+                                            .setNegativeButton(R.string.btn_no, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    changeParcelStatus(Parcel.CUST_MARKED_NOT_DELIVERED);
+                                                    dialog.dismiss();
+                                                }
+                                            })
+                                            .setIcon(android.R.drawable.ic_dialog_alert)
+                                            .show();
+
                                 }
                             }
 
@@ -363,11 +449,50 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
+    }
 
+    private void generateNewParcelNotification(){
+        if(parcelsIDList!=null){
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference dataReference = database.getReference();
+            dataReference.child("Parcels").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Iterable<DataSnapshot> parcels = dataSnapshot.getChildren();
+                    ArrayList<Parcel> parcelsList = new ArrayList<Parcel>();
+                    for (DataSnapshot parcel : parcels) {
+                        Parcel tempParcel = parcel.getValue(Parcel.class);
+                        if(parcelsIDList.contains(tempParcel.getParcelID() )){
+                            parcelsList.add(tempParcel);
+                            if(tempParcel.getStatus() == Parcel.MARKED_DELIVERED){
+                                Intent parcelProfile = new Intent(MapsActivity.this, ParcelProfile.class);
+                                parcelProfile.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
+                                parcelProfile.putExtra("parcel",tempParcel);
+                                parcelProfile.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                PendingIntent pendingIntent = PendingIntent.getActivity(MapsActivity.this, 0, parcelProfile, PendingIntent.FLAG_ONE_SHOT);
+                                NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(MapsActivity.this);
+                                notificationBuilder.setContentTitle("Parcel marked as delivered!");
+                                notificationBuilder.setContentText("From: " + DecodeString(tempParcel.getCarrierID()));
+                                notificationBuilder.setAutoCancel(true);
+                                notificationBuilder.setSmallIcon(R.mipmap.ic_launcher);
+                                notificationBuilder.setContentIntent(pendingIntent);
+                                notificationBuilder.setOngoing(true);
+                                NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                                int m = (int) ((new Date().getTime() / 1000L) % Integer.MAX_VALUE);
+                                notificationManager.notify(m, notificationBuilder.build());
+                            }
+                        }
 
+                    }
+                }
 
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
+                }
+            });
+        }
     }
 
     private void calculateFair(){
@@ -395,9 +520,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (state) {
 
             progressDialog = progressDialog.show(this, "Waiting for courier", "Be patient while the courier accepts your request", false, false);
+            Runnable progressRunnable = new Runnable() {
+
+                @Override
+                public void run() {
+                    if(currentParcel.getStatus()==Parcel.NEW){
+                        progressDialog.dismiss();
+                        new AlertDialog.Builder(MapsActivity.this)
+                                .setTitle("Courier is not responding!")
+                                .setMessage("The courier is not responding to your request. You can always try another courier.")
+
+                                .setNegativeButton(R.string.btn_ok, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                        changeParcelStatus(Parcel.TIME_OUT);
+
+                                    }
+                                })
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .show();
+                    }
+
+
+                }
+            };
+
+            Handler pdCanceller = new Handler();
+            pdCanceller.postDelayed(progressRunnable, 120000);
         } else {
             progressDialog.dismiss();
         }
+
+    }
+
+    private void changeParcelStatus(int status){
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference dataReference = database.getReference();
+        dataReference.child("Parcels").child(currentParcelKey).child("status").setValue(status);
 
     }
 
@@ -443,20 +602,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     name.setText(marker.getTitle());
                     contact.setText(marker.getSnippet());
-                    v.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Toast.makeText(null, "Click",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    });
+
                     return v;
                 }
             });
         }
 
-        Toast.makeText(this, "Map Ready",
-                Toast.LENGTH_SHORT).show();
+
         mClient = new GoogleApiClient.Builder(this)
                 .addApi(LocationServices.API)
                 .addConnectionCallbacks(this)
@@ -465,11 +617,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mClient.connect();
     }
 
-    private LocationRequest mLocationReq;
+
 
     @Override
     protected void onResume() {
         super.onResume();
+
         if (mClient != null) {
             mClient.connect();
         }
@@ -479,6 +632,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onPause() {
         super.onPause();
+
         if (mClient != null) {
             mClient.disconnect();
         }
@@ -500,15 +654,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         mMap.setMyLocationEnabled(true);
-        Toast.makeText(this, "Connected",
-                Toast.LENGTH_SHORT).show();
+
         checkGPS();
         mLocationReq = LocationRequest.create();
         mLocationReq.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationReq.setInterval(30000);
 
-        Toast.makeText(this, "Request Location",
-                Toast.LENGTH_SHORT).show();
+
 
         try{
             //mMap.setMyLocationEnabled(true);
@@ -565,14 +717,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onConnectionSuspended(int i) {
-        Toast.makeText(this, "Connection Suspended",
-                Toast.LENGTH_SHORT).show();
+
     }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Toast.makeText(this, "Connection Failed!",
-                Toast.LENGTH_SHORT).show();
+
     }
 
     Marker marker;
@@ -580,8 +730,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(Location location) {
 
-        /*Toast.makeText(this, "Lcation Changed",
-                Toast.LENGTH_SHORT).show();*/
+
         if(location == null){
             Toast.makeText(this, "Cannot get current location",
                     Toast.LENGTH_SHORT).show();
@@ -663,8 +812,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 ArrayAdapter<String> adapter = new ArrayAdapter<String>(getBaseContext(),R.layout.nvoy_spinner_item,custName);
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 sp.setAdapter(adapter);
-                Toast.makeText(getBaseContext(), "Customers Updated!",
-                        Toast.LENGTH_SHORT).show();
+
 
 
             }
@@ -694,6 +842,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     tempCourier.setActive((boolean)courier.child("active").getValue());
                     tempCourier.setExpressCourier((boolean)courier.child("expressCourier").getValue());
                     com.proximosolutions.nvoycustomer3.MainLogic.Location courierLocation = new com.proximosolutions.nvoycustomer3.MainLogic.Location();
+                    if(courier.child("location").child("latitude").getValue().toString().equals("")){
+                        continue;
+                    }
                     courierLocation.setLatitude(courier.child("location").child("latitude").getValue().toString());
                     courierLocation.setLongitude(courier.child("location").child("longitude").getValue().toString());
                     tempCourier.setCurrentLocation(courierLocation);
@@ -757,8 +908,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
 
-            Toast.makeText(this, "Courier Markers Updated",
-                    Toast.LENGTH_SHORT).show();
+
         }
     }
 
@@ -781,15 +931,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             slidingUpPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
             ((TextView)findViewById(R.id.text_selected_courier)).setText("Selected: "+marker.getTitle());
             currentCourierID = marker.getSnippet();
-            //((TextView)findViewById(R.id.text_selected_courier_contact)).setText(marker.getSnippet());
 
         }
-
-
-        Toast.makeText(this, marker.getTitle(),
-                Toast.LENGTH_SHORT).show();
         return true;
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
 
+    }
 }

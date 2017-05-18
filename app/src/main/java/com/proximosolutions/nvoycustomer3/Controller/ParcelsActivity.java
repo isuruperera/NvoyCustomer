@@ -148,8 +148,10 @@ public class ParcelsActivity extends AppCompatActivity
                         parcelStatus = "In transit";
                     }else if(tempParcelStatus==Parcel.DELIVERED){
                         parcelStatus = "Delivered";
+                    }else if(tempParcelStatus==Parcel.TIME_OUT){
+                        parcelStatus = "Courier Rejected";
                     }
-                    if(myParcelKeys.contains(parcelID)){
+                    if(myParcelKeys.contains(parcelID) && tempParcelStatus!=Parcel.TIME_OUT){
                         ChildRow childRow = new ChildRow(parcelID,parcelStatus,R.mipmap.ic_menu_parcel);
                         ParentRow parentRow = null;
                         parentRow = new ParentRow(name, childRow);

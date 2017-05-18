@@ -279,7 +279,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     private void attemptLogin() {
 
-        showProgressWindow(true);
+
         if (mAuth == null) {
             showProgressWindow(false);
             return;
@@ -317,20 +317,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
-            showProgressWindow(false);
+            //showProgressWindow(false);
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            //showProgressWindow(true);
-            //Log.w("signIn start first "));
-            //showProgressWindow(true);
-            Toast.makeText(LoginActivity.this, "Authentication start",
-                    Toast.LENGTH_SHORT).show();
+
+            showProgressWindow(true);
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
+                            showProgressWindow(false);
                             //Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
                             Log.w("signIn start", task.getException());
                             // If sign in fails, display a message to the user. If sign in succeeds
@@ -341,14 +337,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                 //showProgress(false);
                                 LoginActivity.this.showProgressWindow(false);
                                 Log.w("signInWithEmail", task.getException());
-                                Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                        Toast.LENGTH_SHORT).show();
+
                                 //showProgress(false);
                                 ((TextView)findViewById(R.id.password)).setError("Wrong Password!");
 
                             }else{
 
-
+                                showProgressWindow(true);
                                 FirebaseDatabase database = FirebaseDatabase.getInstance();
                                 DatabaseReference dataReference = database.getReference();
 
@@ -361,8 +356,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                             showProgressWindow(false);
                                             Log.d("Null Customer","Null customer detected");
                                             Log.d("User Status","Signed out");
-                                            Toast.makeText(LoginActivity.this, "Invalid User!",
-                                                    Toast.LENGTH_SHORT).show();
+
                                             Log.d("User Status","Signed out: invalid user");
                                             mAuth.signOut();
                                             //onDestroy();
@@ -380,8 +374,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                                             if(customer.isActive()){
                                                 showProgressWindow(false);
-                                                Toast.makeText(LoginActivity.this, "Logged In!",
-                                                        Toast.LENGTH_SHORT).show();
+
                                                 Intent mapsActivity = new Intent(LoginActivity.this,MapsActivity.class);
                                                 mapsActivity.putExtra("userID",FirebaseAuth.getInstance().getCurrentUser().getEmail());
                                                 startActivity(mapsActivity);
@@ -397,8 +390,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                                 startActivity(loginActivity);
                                                 loginActivity.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK |Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-                                                Toast.makeText(LoginActivity.this, "Open Maps!",
-                                                        Toast.LENGTH_SHORT).show();
+
                                             }
                                         }
                                         //showProgress(false);
